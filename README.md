@@ -1,16 +1,35 @@
-# React + Vite
+# LLM & Agentic Learning
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Dự án học tập về Large Language Models, AI Agents và ứng dụng thực tiễn trong phát triển phần mềm.
 
-Currently, two official plugins are available:
+## Nội Dung
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Vue.js AI Skills
+Tài liệu tổng hợp các kỹ năng, prompt templates và best practices khi sử dụng AI để phát triển Vue.js.
 
-## React Compiler
+| Tài liệu | Mô tả |
+|----------|-------|
+| [Vue.js AI Skills](./docs/vuejs-ai-skills.md) | Tổng hợp đầy đủ: components, Pinia, Router, testing, TypeScript |
+| [Prompt Cheatsheet](./docs/vuejs-prompt-cheatsheet.md) | Quick reference prompts cho Vue.js development |
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+### Curriculum Tracker App
+Ứng dụng theo dõi tiến trình học LLM & Agentic AI với 6 modules:
 
-## Expanding the ESLint configuration
+1. **NLP Fundamentals** — Nền tảng xử lý ngôn ngữ tự nhiên
+2. **Deep Learning in NLP** — Neural networks cho NLP
+3. **Transformer & LLMs** — Kiến trúc Transformer
+4. **RAG** — Retrieval-Augmented Generation
+5. **AI Agents** — Xây dựng autonomous AI agents
+6. **AI Deployment** — Triển khai AI production
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Chạy Ứng Dụng
+
+```bash
+npm install
+npm run dev
+```
+
+## Tech Stack
+
+- React 19 + Vite (Curriculum Tracker App)
+- Vue 3 + TypeScript (AI Skills Documentation target stack)
