@@ -1,0 +1,22 @@
+{
+  "name": "vuejs-ai-skills",
+  "version": "1.0.0",
+  "description": "Bộ hướng dẫn hành vi cho AI khi phát triển ứng dụng Vue 3. Bao gồm Composition API, Pinia, testing, performance, và design patterns.",
+  "skills": [
+    "./skills/vuejs-core",
+    "./skills/vuejs-state",
+    "./skills/vuejs-patterns",
+    "./skills/vuejs-testing",
+    "./skills/vuejs-performance"
+  ],
+  "keywords": ["vue", "vuejs", "vue3", "composition-api", "pinia", "vitest", "typescript"],
+  "category": "framework",
+  "author": "LLM-and-agentic-learning",
+  "license": "MIT",
+  "references": [
+    "https://github.com/vuejs-ai/skills",
+    "https://github.com/forrestchang/andrej-karpathy-skills",
+    "https://vuejs.org/guide/best-practices/",
+    "https://pinia.vuejs.org/core-concepts/"
+  ]
+}
