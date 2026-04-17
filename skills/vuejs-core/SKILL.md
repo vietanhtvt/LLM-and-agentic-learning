@@ -254,6 +254,61 @@ onMounted(async () => {
 
 ---
 
+## 9. Slots — typed slots với defineSlots
+
+**Vue 3.3+ cho phép type slots với `defineSlots()`. Giúp component library có better DX.**
+
+```typescript
+// ✅ Typed slots
+const slots = defineSlots<{
+  default(props: { item: Product; index: number }): unknown
+  empty(): unknown
+  header(props: { total: number }): unknown
+}>()
+
+// ✅ Trong template — pass typed slot props
+<template>
+  <div>
+    <slot name="header" :total="items.length" />
+    <div v-if="items.length === 0">
+      <slot name="empty" />
+    </div>
+    <div v-for="(item, i) in items" :key="item.id">
+      <slot :item="item" :index="i" />
+    </div>
+  </div>
+</template>
+```
+
+---
+
+## 10. Teleport — render ngoài component tree
+
+**Dùng `<Teleport>` cho modal, toast, tooltip — render vào `body` thay vì trong component.**
+
+```vue
+<!-- ✅ Modal với Teleport -->
+<template>
+  <button @click="isOpen = true">Mở modal</button>
+
+  <Teleport to="body">
+    <div v-if="isOpen" class="modal-overlay" @click.self="isOpen = false">
+      <div class="modal">
+        <slot />
+        <button @click="isOpen = false">Đóng</button>
+      </div>
+    </div>
+  </Teleport>
+</template>
+
+<!-- ✅ Disable Teleport khi cần (ví dụ: SSR) -->
+<Teleport to="body" :disabled="isServer">
+  <Modal />
+</Teleport>
+```
+
+---
+
 ## Anti-patterns cần tránh
 
 | Anti-pattern | Thay bằng |
@@ -264,3 +319,5 @@ onMounted(async () => {
 | `provide/inject` cho global state | Pinia store |
 | Component quá lớn (>300 dòng) | Tách composable + child components |
 | Async trong `watch` callback không có cancel | Dùng `watchEffect` với cleanup function |
+| Modal render bên trong component có overflow:hidden | `<Teleport to="body">` |
+| Không type slots | `defineSlots<{ ... }>()` |

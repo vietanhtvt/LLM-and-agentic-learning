@@ -323,3 +323,69 @@ tests/
 - UI components: test happy path + error states + edge cases
 - Pure utils: 100%
 - Không đặt mục tiêu coverage làm metric chính — chất lượng test quan trọng hơn số %
+
+---
+
+## 11. MSW — mock API ở network level
+
+**Mock Service Worker (MSW) intercept HTTP requests — test thực tế hơn `vi.mock()`.**
+
+```typescript
+// ✅ tests/mocks/handlers.ts
+import { http, HttpResponse } from 'msw'
+
+export const handlers = [
+  http.get('/api/products', () => {
+    return HttpResponse.json([
+      { id: '1', name: 'iPhone', price: 999 }
+    ])
+  }),
+
+  http.post('/api/products', async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json({ id: '2', ...body }, { status: 201 })
+  }),
+
+  http.get('/api/products/:id', ({ params }) => {
+    if (params.id === 'not-found') {
+      return HttpResponse.json({ error: 'Not found' }, { status: 404 })
+    }
+    return HttpResponse.json({ id: params.id, name: 'Product', price: 100 })
+  })
+]
+
+// ✅ tests/setup.ts — khởi động MSW server
+import { setupServer } from 'msw/node'
+import { handlers } from './mocks/handlers'
+
+const server = setupServer(...handlers)
+beforeAll(() => server.listen())
+afterEach(() => server.resetHandlers())
+afterAll(() => server.close())
+```
+
+---
+
+## 12. Snapshot testing — dùng đúng chỗ
+
+**Snapshot hữu ích cho component output ổn định. Không dùng cho dynamic content.**
+
+```typescript
+// ✅ Snapshot cho UI components tĩnh
+it('renders primary button correctly', () => {
+  const wrapper = mount(BaseButton, {
+    props: { variant: 'primary', label: 'Submit' }
+  })
+  expect(wrapper.html()).toMatchSnapshot()
+})
+
+// ✅ Inline snapshot cho small outputs
+it('renders user avatar', () => {
+  const wrapper = mount(UserAvatar, { props: { name: 'Nguyễn A' } })
+  expect(wrapper.find('[data-testid="avatar-initials"]').text()).toMatchInlineSnapshot('"NA"')
+})
+
+// ❌ Snapshot cho dynamic content (date, random ID) → flaky tests
+it('renders product card', () => {
+  expect(wrapper.html()).toMatchSnapshot() // Sẽ fail mỗi khi date thay đổi!
+})

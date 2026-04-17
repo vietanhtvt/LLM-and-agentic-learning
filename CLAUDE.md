@@ -2,7 +2,7 @@
 
 Hướng dẫn hành vi cho AI khi phát triển ứng dụng Vue.js. Dựa trên cộng đồng `vuejs-ai/skills`, tài liệu chính thức Vue 3, và các thực hành tốt nhất được kiểm chứng.
 
-> **Khi dùng AI để viết Vue code: luôn đề cập "dùng Vue 3 Composition API với `<script setup>`".**
+> **Khi dùng AI để viết Vue code: luôn đề cập "dùng Vue 3 Composition API với `<script setup lang="ts">`".**
 
 ---
 
@@ -21,6 +21,8 @@ const count = ref(0)
 export default { data() { return { count: 0 } } }
 </script>
 ```
+
+**Thứ tự trong `<script setup>`:** imports → props/emits → state → computed → methods → watchers → lifecycle hooks
 
 ---
 
@@ -164,7 +166,83 @@ if (condition) {
 
 ---
 
-## 9. Performance: lazy load, shallowRef, v-memo
+## 9. Vue Router — named routes, lazy load, guards ở router layer
+
+```typescript
+// ✅ Luôn dùng named routes — không hardcode path
+router.push({ name: 'ProductDetail', params: { id } })
+
+// ✅ Tất cả page routes phải lazy-loaded
+const routes = [
+  { path: '/dashboard', component: () => import('./Dashboard.vue') } // ✅
+]
+
+// ✅ Auth guard trong router, không phải component
+router.beforeEach((to, _from, next) => {
+  if (to.meta.requiresAuth && !authStore.isLoggedIn) {
+    next({ name: 'Login', query: { redirect: to.fullPath } })
+  } else {
+    next()
+  }
+})
+
+// ❌ Guard trong component — không tái sử dụng được
+onMounted(() => {
+  if (!isLoggedIn.value) router.push('/login') // SAI vị trí
+})
+```
+
+---
+
+## 10. TypeScript — no any, type guards, const objects
+
+```typescript
+// ❌ Không dùng any
+function processData(data: any) { return data.value }
+
+// ✅ unknown + type guard
+function processData(data: unknown): string {
+  if (typeof data !== 'string') throw new TypeError('Expected string')
+  return data
+}
+
+// ✅ Const object thay vì enum
+const USER_ROLES = { Admin: 'admin', User: 'user' } as const
+type UserRole = typeof USER_ROLES[keyof typeof USER_ROLES]
+
+// ✅ Generic composable với explicit return type
+interface UseFetchReturn<T> {
+  data: Readonly<Ref<T | null>>
+  loading: Readonly<Ref<boolean>>
+  execute: () => Promise<void>
+}
+```
+
+---
+
+## 11. API Service Layer — không gọi fetch trong component
+
+```typescript
+// ❌ Sai — fetch trực tiếp trong component
+onMounted(async () => {
+  const res = await fetch('/api/products')
+  products.value = await res.json()
+})
+
+// ✅ Đúng — service layer
+// src/services/productService.ts
+export const productService = {
+  getAll: () => apiClient.get<Product[]>('/products'),
+  getById: (id: string) => apiClient.get<Product>(`/products/${id}`)
+}
+
+// src/stores/product.ts — gọi service
+const { data } = await productService.getAll()
+```
+
+---
+
+## 12. Performance: lazy load, shallowRef, v-memo
 
 ```typescript
 // Lazy load component
@@ -188,7 +266,7 @@ const routes = [
 
 ---
 
-## 10. Security: không dùng v-html với user input
+## 13. Security: không dùng v-html với user input
 
 ```vue
 <!-- ❌ XSS vulnerability -->
@@ -218,9 +296,16 @@ const routes = [
 | `v-html` với user input | Escape hoặc sanitize (DOMPurify) |
 | Render 1000+ items không virtualize | `vue-virtual-scroller` |
 | Quên `return` trong Pinia setup store | Return tất cả state/getters/actions |
-| Dùng `any` type trong TypeScript | Khai báo type rõ ràng |
-| Fetch API trực tiếp trong component | Đặt trong service hoặc store action |
+| Dùng `any` type trong TypeScript | `unknown` + type guard, hoặc generic |
+| Enum TypeScript | `const OBJ = {...} as const` + `typeof` |
+| Fetch API trực tiếp trong component | Service layer (`src/services/`) |
 | Không cleanup side effects | `onUnmounted(() => cleanup())` |
+| Hardcode route path `'/dashboard'` | Named route `{ name: 'Dashboard' }` |
+| Import page component trực tiếp | `() => import('@/pages/Page.vue')` |
+| Auth guard trong component | Navigation guard trong `router/guards.ts` |
+| `watch(bigObj, h, { deep: true })` | Watch property cụ thể với getter |
+| Inline object/array trong props | Extract vào `computed()` |
+| `useStore()` bên ngoài setup | Luôn gọi trong `<script setup>` hoặc function |
 
 ---
 
@@ -236,12 +321,12 @@ src/
   composables/
     core/         # Generic (useDebounce, useFetch, useIntersection)
     features/     # Feature-specific (useAuth, useCart)
-  pages/ (views/) # Route-level components
-  router/         # Router config + guards
+  pages/          # Route-level components (lazy-loaded)
+  router/         # index.ts + guards.ts
   stores/         # Pinia stores (một file/domain)
-  services/       # API abstractions
+  services/       # API client + service functions
   types/          # TypeScript interfaces/types
-  utils/          # Pure functions
+  utils/          # Pure functions (không có Vue reactivity)
 ```
 
 ---
@@ -253,8 +338,10 @@ src/
 {
   "compilerOptions": {
     "strict": true,
+    "noUncheckedIndexedAccess": true,
     "jsx": "preserve",
     "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
     "paths": { "@/*": ["./src/*"] }
   }
 }
@@ -262,3 +349,18 @@ src/
 
 - Chạy `vue-tsc --noEmit` trong CI để catch template type errors
 - Dùng `@vue/language-tools` (Volar) trong VS Code, không dùng Vetur
+
+---
+
+## Skill files tham khảo chi tiết
+
+| Skill | Nội dung |
+|---|---|
+| `skills/vuejs-core/SKILL.md` | Composition API, reactivity, lifecycle, directives |
+| `skills/vuejs-state/SKILL.md` | Pinia stores, storeToRefs, async actions |
+| `skills/vuejs-router/SKILL.md` | Vue Router 4, guards, typed meta, route props |
+| `skills/vuejs-typescript/SKILL.md` | Generic components, utility types, strict config |
+| `skills/vuejs-api/SKILL.md` | Service layer, HTTP client, error handling, optimistic updates |
+| `skills/vuejs-patterns/SKILL.md` | Composables, renderless, provide/inject, error boundary |
+| `skills/vuejs-testing/SKILL.md` | Vitest, Vue Test Utils, Pinia testing, async |
+| `skills/vuejs-performance/SKILL.md` | Bundle size, shallowRef, virtual scroll, KeepAlive |

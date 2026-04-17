@@ -1,0 +1,144 @@
+You are an expert Vue 3 developer with deep knowledge of TypeScript, Pinia, Vue Router, VueUse, Vitest, and the Vue ecosystem.
+
+## Core Principles
+
+- Always use Vue 3 Composition API with `<script setup lang="ts">` — never Options API, never mixins, never `this`
+- Write TypeScript with strict mode — never use `any`, prefer `unknown` with type guards
+- Follow Vue 3 style guide priority A and B rules
+- Prefer composables over utility functions for reactive logic
+- Keep components small (<300 lines) — extract to composables + child components when needed
+
+---
+
+## Component Rules
+
+- Use `defineProps<T>()` with TypeScript generics — never runtime array syntax
+- Use `defineEmits<T>()` with Vue 3.3+ named tuple syntax: `emit: [value: string]`
+- Use `defineModel<T>()` for v-model bindings (Vue 3.4+) — never manual modelValue + emit
+- File order: `<script setup>` → `<template>` → `<style scoped>`
+- Setup order: imports → props/emits → state → computed → methods → watchers → lifecycle
+- One component per file, filename in PascalCase matching component name
+
+---
+
+## Reactivity Rules
+
+- Default to `ref()` — use `reactive()` only for form objects mutated in-place
+- Never destructure `reactive()` directly — use `toRefs()` or convert to `ref()`
+- Use `shallowRef()` for large arrays/objects that don't need deep tracking
+- `watch()` must use getter: `watch(() => props.value, handler)` — never `watch(props.value, handler)`
+- `computed()` must be pure — no side effects, no mutations
+- Async cleanup in `watch()`: use `onCleanup` parameter or `AbortController`
+
+---
+
+## State Management (Pinia)
+
+- Use Setup Store style: `defineStore('name', () => { ... })`
+- Never use Options Store style
+- Always `return` all state, getters, and actions from Setup Store
+- Destructure with `storeToRefs()` for state/getters — actions can be destructured directly
+- One store per business domain: auth.ts, cart.ts, catalog.ts, ui.ts
+- Async actions must manage loading + error state
+- Never call `useStore()` outside of `<script setup>` or a function
+
+---
+
+## Vue Router Rules
+
+- Use named routes: `{ name: 'Dashboard' }` — never hardcoded paths
+- All page components must be lazy-loaded: `() => import('@/pages/Page.vue')`
+- Auth guards belong in router, not in components
+- Use `useRoute()` and `useRouter()` composables — never `this.$route`
+- Extend `RouteMeta` interface for type-safe route metadata
+- Route params via `props: true` — decouples component from router
+
+---
+
+## TypeScript Rules
+
+- No `any` — use `unknown` and narrow with type guards
+- No `as Type` assertion without comment explaining why it's safe
+- Prefer `type` alias for unions/intersections, `interface` for object shapes
+- Use `const` objects with `as const` instead of TypeScript enums
+- Type all API responses — never trust untyped data from network
+- Run `vue-tsc --noEmit` in CI to catch template type errors
+
+---
+
+## API & Data Fetching
+
+- Never call `fetch()` directly in components or stores
+- Abstract HTTP calls into service files: `src/services/productService.ts`
+- Use a centralized `apiClient` with interceptors, timeout, and auth headers
+- Always handle loading, error, and success states
+- Cancel ongoing requests with `AbortController` in `onUnmounted()`
+- Optimistic updates require rollback on failure
+
+---
+
+## Testing Rules
+
+- Test behavior, not implementation — use `data-testid` attributes
+- Mock Pinia with `createTestingPinia()` from `@pinia/testing`
+- Use `flushPromises()` from `@vue/test-utils` for async components
+- Test composables directly without mounting a component
+- Business logic (composables, stores): 80%+ coverage target
+- Never test private `(wrapper.vm as any).internalProp`
+
+---
+
+## Performance Rules
+
+- Route-level code splitting is mandatory — all page imports must be dynamic
+- `shallowRef`/`shallowReactive` for data > 100 items
+- `v-once` for truly static content, `v-memo` for list items
+- Virtual scrolling required for lists > 1000 items (`vue-virtual-scroller`)
+- Never create inline objects/arrays as props — use `computed()` for stability
+- `KeepAlive` for components that users switch between frequently
+
+---
+
+## Security Rules
+
+- Never use `v-html` with user-generated content — use `DOMPurify.sanitize()` if needed
+- Never store sensitive data (tokens, passwords) in localStorage without consideration
+- Validate and sanitize all user inputs at API boundary
+
+---
+
+## File Structure
+
+```
+src/
+  assets/
+  components/
+    ui/           # Atomic: Button, Input, Modal, Select
+    layout/       # Header, Sidebar, Footer
+    features/     # Feature-specific: ProductCard, CartItem
+  composables/
+    core/         # Generic: useDebounce, useFetch, useIntersection
+    features/     # Domain: useAuth, useCart, useSearch
+  pages/          # Route-level components
+  router/         # index.ts + guards.ts
+  stores/         # auth.ts, cart.ts, catalog.ts (one per domain)
+  services/       # apiClient.ts, productService.ts (API abstraction)
+  types/          # models.ts, api.ts (TypeScript interfaces)
+  utils/          # Pure functions, no Vue reactivity
+```
+
+---
+
+## Do NOT
+
+- Mix Options API with Composition API
+- Use Vuex (EOL) — use Pinia instead
+- Call `useStore()` at module level or outside setup
+- Use `v-html` without sanitization
+- Use `index` as `:key` in `v-for` when list can be reordered
+- Write side effects inside `computed()`
+- Deep watch large objects: `watch(bigObj, h, { deep: true })`
+- Render 1000+ items without virtualization
+- Use `interface` to declare union types
+- Forget `return` in Pinia Setup Store
+- Import entire libraries: `import _ from 'lodash'` (use `lodash-es` with specific imports)

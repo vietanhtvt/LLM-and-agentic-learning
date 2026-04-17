@@ -356,6 +356,56 @@ export function useForm<T extends Record<string, unknown>>(
 
 ---
 
+## 10. Compound Component Pattern — liên kết implicit
+
+**Khi các components liên kết chặt chẽ, dùng provide/inject để share state ẩn.**
+
+```typescript
+// ✅ src/components/ui/Tabs/index.ts — Compound components
+// Tabs.vue — parent component
+const activeTab = ref<string>('')
+const TABS_KEY: InjectionKey<{ activeTab: Ref<string>; setTab: (id: string) => void }> = Symbol()
+
+provide(TABS_KEY, {
+  activeTab,
+  setTab: (id: string) => { activeTab.value = id }
+})
+```
+
+```vue
+<!-- TabItem.vue — child component -->
+<script setup lang="ts">
+const props = defineProps<{ id: string; label: string }>()
+const tabs = inject(TABS_KEY)!
+const isActive = computed(() => tabs.activeTab.value === props.id)
+</script>
+
+<template>
+  <button
+    role="tab"
+    :aria-selected="isActive"
+    :class="{ active: isActive }"
+    @click="tabs.setTab(props.id)"
+  >
+    {{ label }}
+  </button>
+</template>
+```
+
+```vue
+<!-- Dùng Compound Component -->
+<Tabs default-tab="profile">
+  <TabList>
+    <TabItem id="profile" label="Hồ sơ" />
+    <TabItem id="security" label="Bảo mật" />
+  </TabList>
+  <TabPanel id="profile"><ProfileForm /></TabPanel>
+  <TabPanel id="security"><SecurityForm /></TabPanel>
+</Tabs>
+```
+
+---
+
 ## Checklist khi thiết kế component
 
 - [ ] Component có single responsibility không?
@@ -365,3 +415,5 @@ export function useForm<T extends Record<string, unknown>>(
 - [ ] Component có quá 300 dòng không? → Cần tách
 - [ ] Có truyền quá nhiều props (prop drilling)? → Dùng provide/inject hoặc store
 - [ ] Event names có dùng camelCase không? → Nên dùng kebab-case trong template
+- [ ] Compound components có dùng provide/inject không? → Không dùng props drilling
+- [ ] Slots có được typed với `defineSlots<>()` không?

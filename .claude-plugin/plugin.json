@@ -1,22 +1,38 @@
 {
   "name": "vuejs-ai-skills",
-  "version": "1.0.0",
-  "description": "Bộ hướng dẫn hành vi cho AI khi phát triển ứng dụng Vue 3. Bao gồm Composition API, Pinia, testing, performance, và design patterns.",
+  "version": "2.0.0",
+  "description": "Bộ hướng dẫn hành vi cho AI khi phát triển ứng dụng Vue 3. Bao gồm Composition API, Pinia, Vue Router, TypeScript, API integration, testing, performance, và design patterns.",
   "skills": [
     "./skills/vuejs-core",
     "./skills/vuejs-state",
+    "./skills/vuejs-router",
+    "./skills/vuejs-typescript",
+    "./skills/vuejs-api",
     "./skills/vuejs-patterns",
     "./skills/vuejs-testing",
     "./skills/vuejs-performance"
   ],
-  "keywords": ["vue", "vuejs", "vue3", "composition-api", "pinia", "vitest", "typescript"],
+  "keywords": [
+    "vue", "vuejs", "vue3", "composition-api", "pinia",
+    "vue-router", "typescript", "vitest", "msw", "zod",
+    "service-layer", "performance", "design-patterns"
+  ],
   "category": "framework",
   "author": "LLM-and-agentic-learning",
   "license": "MIT",
+  "compatibility": {
+    "claude-code": ">=1.0.0",
+    "cursor": ">=0.40.0",
+    "copilot": "compatible",
+    "gemini-cli": "compatible"
+  },
   "references": [
     "https://github.com/vuejs-ai/skills",
     "https://github.com/forrestchang/andrej-karpathy-skills",
+    "https://github.com/alexanderop/claude-skill-vue-development",
+    "https://github.com/aliarghyani/vue-cursor-rules",
     "https://vuejs.org/guide/best-practices/",
-    "https://pinia.vuejs.org/core-concepts/"
+    "https://pinia.vuejs.org/core-concepts/",
+    "https://router.vuejs.org/guide/"
   ]
 }
